@@ -1,1 +1,82 @@
-javascript:(async()=>{if(document.getElementById('geekAI-frame'))return;let f=document.createElement('div');f.id='geekAI-frame';f.style.cssText='position:fixed;bottom:20px;right:20px;width:400px;height:600px;z-index:999999;border:1px solid #ccc;box-shadow:0 4px 20px rgba(0,0,0,0.3);border-radius:8px;overflow:hidden;background:white;';let close=document.createElement('button');close.innerText='✖';close.style.cssText='position:absolute;top:5px;right:5px;z-index:1000000;background:rgba(0,0,0,0.1);border:none;border-radius:4px;padding:2px 6px;cursor:pointer;';close.onclick=()=>f.remove();f.appendChild(close);let iframe=document.createElement('iframe');iframe.style='width:100%;height:100%;border:none;';iframe.srcdoc=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Geek AI</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/qwertyinterface/frntend-qwerty-global@latest/frntend-qwerty-global.css"><link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script><style>body{margin:0}html,body{height:100%}</style></head><body data-theme="light"><div id="geekApp"></div><script src="https://cdn.jsdelivr.net/gh/qwertyinterface/assistente-geekai@latest/script.js"></script></body></html>`;f.appendChild(iframe);document.body.appendChild(f);})();
+function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { /* Light theme */ --bg-primary: #ffffff; --bg-secondary: #f7f7f8; --bg-tertiary: #ececf1; --border-color: #d9d9e3; --text-primary: #000000; --text-secondary: #565869; --text-tertiary: #8e8ea0; --accent-color: #10a37f; --accent-hover: #0d8a6b; --danger-color: #ef4444; --danger-hover: #dc2626; --sidebar-bg: #ffffff; --sidebar-border: #ececf1; --message-bg: transparent; --assistant-bg: #f7f7f8; --input-bg: #ffffff; --shadow: 0 2px 8px rgba(0, 0, 0, 0.1); --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15); }
+        [data-theme="dark"] { /* Dark theme */ --bg-primary: #212121; --bg-secondary: #2f2f2f; --bg-tertiary: #424242; --border-color: #565869; --text-primary: #ececec; --text-secondary: #c5c5d2; --text-tertiary: #8e8ea0; --accent-color: #10a37f; --accent-hover: #0d8a6b; --danger-color: #ef4444; --danger-hover: #dc2626; --sidebar-bg: #171717; --sidebar-border: #2f2f2f; --message-bg: transparent; --assistant-bg: #2f2f2f; --input-bg: #2f2f2f; --shadow: 0 2px 8px rgba(0, 0, 0, 0.3); --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4); }
+        body { font-family: 'Söhne', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; background: var(--bg-primary); color: var(--text-primary); height: 100vh; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease; }
+        .app { display: flex; height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); display: flex; flex-direction: column; transition: all 0.3s ease; }
+        .sidebar-footer { padding: 16px; border-top: 1px solid var(--sidebar-border); font-size: 12px; color: var(--text-tertiary); text-align: center; }
+        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-primary); }
+        .chat-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); background: var(--bg-primary); display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; }
+        .messages-container { flex: 1; overflow-y: auto; background: var(--bg-primary); scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; }
+        .messages-area { max-width: 768px; margin: 0 auto; padding: 32px 24px; }
+        .input-area { padding: 24px; background: var(--bg-primary); border-top: 1px solid var(--border-color); }
+        .text-input { width: 100%; border: none; outline: none; font-size: 16px; resize: none; min-height: 24px; max-height: 200px; font-family: inherit; background: transparent; color: var(--text-primary); }
+        .send-button { background: var(--accent-color); color: white; }
+        .send-button:hover:not(:disabled) { background: var(--accent-hover); transform: scale(1.05); }
+        .hidden { display: none !important; }
+    `;
+    document.head.appendChild(style);
+
+    const chatContainer = document.createElement('div');
+    chatContainer.innerHTML = `
+        <div class="app">
+            <div class="sidebar">
+                <div class="sidebar-footer">
+                    <div>✨ Geek AI v1.1</div>
+                    <div style="margin-top: 8px; opacity: 0.7">© 2025 Geek AI. Todos os direitos reservados.</div>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="chat-header">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                    <div class="model-selector">
+                        <div class="gemini-logo-small">✨</div>
+                        <span>Geek AI v1.1</span>
+                    </div>
+                </div>
+                <div class="messages-container">
+                    <div class="messages-area" id="messagesArea">
+                        <div class="welcome-screen" id="welcomeScreen">
+                            <div class="gemini-logo-large">✨</div>
+                            <h1 class="welcome-title">Como posso ajudar você hoje?</h1>
+                            <p class="welcome-subtitle">Faça perguntas, envie imagens ou inicie uma conversa com formatação avançada</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <div class="input-container">
+                            <textarea class="text-input" id="messageInput" placeholder="Envie uma mensagem para Geek Ai..." onkeydown="handleKeyDown(event)"></textarea>
+                            <div class="input-buttons">
+                                <button class="input-button send-button" id="sendButton" onclick="sendMessage()">Enviar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(chatContainer);
+
+    // JavaScript functions
+    window.sendMessage = function() {
+        const input = document.getElementById('messageInput');
+        const message = input.value;
+        if (message) {
+            const messageArea = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            messageArea.appendChild(messageDiv);
+            input.value = '';
+        }
+    };
+
+    window.handleKeyDown = function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    };
+})();
